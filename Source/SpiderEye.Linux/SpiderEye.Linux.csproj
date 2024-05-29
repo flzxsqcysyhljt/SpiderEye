@@ -2,6 +2,7 @@
   <Import Project="..\Shared\SpiderEye.Shared.Platform.proj" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+	  <Nullable>disable</Nullable>
   </PropertyGroup>
 </Project>

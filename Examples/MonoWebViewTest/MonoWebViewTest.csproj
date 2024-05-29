@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net462</TargetFramework>
+		<DefineConstants>$(DefineConstants);WIN</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Source\SpiderEye.Linux\SpiderEye.Linux.csproj" />
+		<ProjectReference Include="..\..\Source\SpiderEye.Windows\SpiderEye.Windows.csproj" />
+	</ItemGroup>
+
+</Project>

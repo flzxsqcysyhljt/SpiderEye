@@ -10,9 +10,9 @@ namespace SpiderEye.Linux
         /// <summary>
         /// Gets or sets the application ID for the status icon.
         /// </summary>
-        public static string? ApplicationId { get; set; }
+        public static string ApplicationId { get; set; }
 
-        private static GtkApplication? app;
+        private static GtkApplication app;
 
         /// <summary>
         /// Initializes the application.

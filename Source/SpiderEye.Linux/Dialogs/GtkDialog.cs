@@ -7,7 +7,7 @@ namespace SpiderEye.Linux
 {
     internal abstract class GtkDialog : IDialog
     {
-        public string? Title { get; set; }
+        public string Title { get; set; }
 
         protected abstract GtkFileChooserAction Type { get; }
 
@@ -16,7 +16,7 @@ namespace SpiderEye.Linux
             return Show(null);
         }
 
-        public DialogResult Show(IWindow? parent)
+        public DialogResult Show(IWindow parent)
         {
             var window = NativeCast.To<GtkWindow>(parent);
             bool useNative = false && Gtk.Version.IsAtLeast(3, 2, 0);
@@ -37,17 +37,21 @@ namespace SpiderEye.Linux
                     else
                     {
                         string acceptString = GetAcceptString(Type);
-                        using GLibString acceptButton = acceptString;
-                        using GLibString cancelButton = "_Cancel";
-                        dialog = Gtk.Dialog.CreateFileDialog(
-                           gtitle.Pointer,
-                           window?.Handle ?? IntPtr.Zero,
-                           Type,
-                           cancelButton,
-                           GtkResponseType.Cancel,
-                           acceptButton,
-                           GtkResponseType.Accept,
-                           IntPtr.Zero);
+                        using (GLibString acceptButton = acceptString)
+                        {
+                            using (GLibString cancelButton = "_Cancel")
+                            {
+                                dialog = Gtk.Dialog.CreateFileDialog(
+                               gtitle.Pointer,
+                               window?.Handle ?? IntPtr.Zero,
+                               Type,
+                               cancelButton,
+                               GtkResponseType.Cancel,
+                               acceptButton,
+                               GtkResponseType.Accept,
+                               IntPtr.Zero);
+                            }
+                        }
                     }
                 }
 
@@ -84,22 +88,39 @@ namespace SpiderEye.Linux
 
         private static string GetAcceptString(GtkFileChooserAction type)
         {
-            return type switch
+            switch (type)
             {
-                GtkFileChooserAction.Open => "_Open",
-                GtkFileChooserAction.Save => "_Save",
-                _ => "_Select",
-            };
+                case GtkFileChooserAction.Open:
+                    return "_Open";
+                case GtkFileChooserAction.Save:
+                    return "_Save";
+                case GtkFileChooserAction.SelectFolder:
+                case GtkFileChooserAction.CreateFolder:
+                default:
+                    return "_Select";
+            }
         }
 
         private static DialogResult MapResult(GtkResponseType result)
         {
-            return result switch
+            switch (result)
             {
-                GtkResponseType.Accept or GtkResponseType.Ok or GtkResponseType.Yes or GtkResponseType.Apply => DialogResult.Ok,
-                GtkResponseType.Reject or GtkResponseType.Cancel or GtkResponseType.Close or GtkResponseType.No => DialogResult.Cancel,
-                _ => DialogResult.None,
-            };
+                case GtkResponseType.Accept:
+                case GtkResponseType.Ok:
+                case GtkResponseType.Yes:
+                case GtkResponseType.Apply:
+                    return DialogResult.Ok;
+                case GtkResponseType.Reject:
+                case GtkResponseType.Cancel:
+                case GtkResponseType.Close:
+                case GtkResponseType.No:
+                    return DialogResult.Cancel;
+                case GtkResponseType.Help:
+                case GtkResponseType.DeleteEvent:
+                case GtkResponseType.None:
+                default:
+                    return DialogResult.None;
+            }
         }
     }
 }

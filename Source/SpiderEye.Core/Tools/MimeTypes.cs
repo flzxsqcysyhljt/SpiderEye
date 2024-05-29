@@ -34,7 +34,7 @@ namespace SpiderEye.Tools
         /// The file extension to mime type map. Add or remove values depending on your need.
         /// Note that the extension must start with a period "." and be in lower case.
         /// </summary>
-        public static readonly Dictionary<string, string> Map = new()
+        public static readonly Dictionary<string, string> Map = new Dictionary<string, string>()
         {
             { ".7z", "application/x-7z-compressed" },
             { ".aac", "audio/aac" },
@@ -91,7 +91,7 @@ namespace SpiderEye.Tools
         /// <returns>The found mime type. If the type was not found, "application/octet-stream" is used.</returns>
         public static string FindForUri(Uri uri)
         {
-            if (TryFindForUri(uri, out string? mime)) { return mime; }
+            if (TryFindForUri(uri, out string mime)) { return mime; }
             else { return Binary; }
         }
 
@@ -102,7 +102,7 @@ namespace SpiderEye.Tools
         /// <returns>The found mime type. If the type was not found, "application/octet-stream" is used.</returns>
         public static string FindForFile(string file)
         {
-            if (TryFindForFile(file, out string? mime)) { return mime; }
+            if (TryFindForFile(file, out string mime)) { return mime; }
             else { return Binary; }
         }
 
@@ -113,7 +113,7 @@ namespace SpiderEye.Tools
         /// <returns>The found mime type. If the type was not found, "application/octet-stream" is used.</returns>
         public static string FindForExtension(string extension)
         {
-            if (TryFindForExtension(extension, out string? mime)) { return mime; }
+            if (TryFindForExtension(extension, out string mime)) { return mime; }
             else { return Binary; }
         }
 
@@ -123,7 +123,7 @@ namespace SpiderEye.Tools
         /// <param name="uri">The URI.</param>
         /// <param name="mimeType">The mime type if found or null otherwise.</param>
         /// <returns>True if the mime type was found; False otherwise.</returns>
-        public static bool TryFindForUri(Uri uri, [NotNullWhen(true)] out string? mimeType)
+        public static bool TryFindForUri(Uri uri, out string mimeType)
         {
             if (uri == null)
             {
@@ -141,7 +141,7 @@ namespace SpiderEye.Tools
         /// <param name="file">The filename.</param>
         /// <param name="mimeType">The mime type if found or null otherwise.</param>
         /// <returns>True if the mime type was found; False otherwise.</returns>
-        public static bool TryFindForFile(string file, [NotNullWhen(true)] out string? mimeType)
+        public static bool TryFindForFile(string file, out string mimeType)
         {
             if (string.IsNullOrWhiteSpace(file))
             {
@@ -159,7 +159,7 @@ namespace SpiderEye.Tools
         /// <param name="extension">The file extension.</param>
         /// <param name="mimeType">The mime type if found or null otherwise.</param>
         /// <returns>True if the mime type was found; False otherwise.</returns>
-        public static bool TryFindForExtension(string extension, [NotNullWhen(true)] out string? mimeType)
+        public static bool TryFindForExtension(string extension, out string mimeType)
         {
             if (string.IsNullOrWhiteSpace(extension))
             {

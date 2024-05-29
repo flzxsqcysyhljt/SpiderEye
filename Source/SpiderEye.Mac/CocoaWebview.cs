@@ -11,10 +11,10 @@ namespace SpiderEye.Mac
 {
     internal class CocoaWebview : IWebview
     {
-        public event NavigatingEventHandler? Navigating;
-        public event PageLoadEventHandler? PageLoaded;
+        public event NavigatingEventHandler Navigating;
+        public event PageLoadEventHandler PageLoaded;
 
-        public event EventHandler<string>? TitleChanged;
+        public event EventHandler<string> TitleChanged;
 
         public bool EnableScriptInterface { get; set; }
         public bool UseBrowserTitle { get; set; }
@@ -105,9 +105,9 @@ namespace SpiderEye.Mac
             ObjC.Call(Handle, "loadRequest:", request);
         }
 
-        public Task<string?> ExecuteScriptAsync(string script)
+        public Task<string> ExecuteScriptAsync(string script)
         {
-            var taskResult = new TaskCompletionSource<string?>();
+            var taskResult = new TaskCompletionSource<string>();
             NSBlock? block = null;
 
             ScriptEvalCallbackDelegate callback = (IntPtr self, IntPtr result, IntPtr error) =>
@@ -116,12 +116,12 @@ namespace SpiderEye.Mac
                 {
                     if (error != IntPtr.Zero)
                     {
-                        string? message = NSString.GetString(ObjC.Call(error, "localizedDescription"));
+                        string message = NSString.GetString(ObjC.Call(error, "localizedDescription"));
                         taskResult.TrySetException(new ScriptException($"Script execution failed with: \"{message}\""));
                     }
                     else
                     {
-                        string? content = NSString.GetString(result);
+                        string content = NSString.GetString(result);
                         taskResult.TrySetResult(content);
                     }
                 }
@@ -237,10 +237,10 @@ namespace SpiderEye.Mac
 
         private static void ObservedValueChanged(CocoaWebview instance, IntPtr keyPath)
         {
-            string? key = NSString.GetString(keyPath);
+            string key = NSString.GetString(keyPath);
             if (key == "title" && instance.UseBrowserTitle)
             {
-                string? title = NSString.GetString(ObjC.Call(instance.Handle, "title"));
+                string title = NSString.GetString(ObjC.Call(instance.Handle, "title"));
                 instance.TitleChanged?.Invoke(instance, title ?? string.Empty);
             }
         }

@@ -13,10 +13,10 @@ namespace SpiderEye.Windows
     /// </summary>
     internal class EdgiumWebview : IWinFormsWebview
     {
-        public event NavigatingEventHandler? Navigating;
-        public event PageLoadEventHandler? PageLoaded;
+        public event NavigatingEventHandler Navigating;
+        public event PageLoadEventHandler PageLoaded;
 
-        public event EventHandler<string>? TitleChanged;
+        public event EventHandler<string> TitleChanged;
 
         public Control Control
         {
@@ -41,8 +41,8 @@ namespace SpiderEye.Windows
         private readonly WebView2 webview;
         private readonly Uri customHost;
 
-        private CoreWebView2Environment environment = null!;
-        private Uri? lastNavigatedUri;
+        private CoreWebView2Environment environment = null;
+        private Uri lastNavigatedUri;
 
         public EdgiumWebview(WebviewBridge bridge)
         {
@@ -59,7 +59,7 @@ namespace SpiderEye.Windows
             InitWebview().RunSyncWithPump();
         }
 
-        public async Task<string?> ExecuteScriptAsync(string script)
+        public async Task<string> ExecuteScriptAsync(string script)
         {
             // The result is double JSON encoded, once from the bridge script (every other webview needs it that way)
             // and once by the Edgium webview. So it first needs to be decoded from a JSON string before returning.
@@ -105,24 +105,25 @@ namespace SpiderEye.Windows
             await webview.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(initScript);
         }
 
-        private async void Webview_WebResourceRequested(object? sender, CoreWebView2WebResourceRequestedEventArgs e)
+        private async void Webview_WebResourceRequested(object sender, CoreWebView2WebResourceRequestedEventArgs e)
         {
-            using var deferral = e.GetDeferral();
-
-            var uri = new Uri(e.Request.Uri);
-            var contentStream = await Application.ContentProvider.GetStreamAsync(uri);
-            if (contentStream == null)
+            using (var deferral = e.GetDeferral())
             {
-                e.Response = webview.CoreWebView2.Environment.CreateWebResourceResponse(null, 404, "Not Found", string.Empty);
-            }
-            else
-            {
-                e.Response = webview.CoreWebView2.Environment.CreateWebResourceResponse(contentStream, 200, "OK", string.Empty);
-                e.Response.Headers.AppendHeader("Content-Type", MimeTypes.FindForUri(uri));
+                var uri = new Uri(e.Request.Uri);
+                var contentStream = await Application.ContentProvider.GetStreamAsync(uri);
+                if (contentStream == null)
+                {
+                    e.Response = webview.CoreWebView2.Environment.CreateWebResourceResponse(null, 404, "Not Found", string.Empty);
+                }
+                else
+                {
+                    e.Response = webview.CoreWebView2.Environment.CreateWebResourceResponse(contentStream, 200, "OK", string.Empty);
+                    e.Response.Headers.AppendHeader("Content-Type", MimeTypes.FindForUri(uri));
+                }
             }
         }
 
-        private void Webview_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        private void Webview_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             var uri = lastNavigatedUri = new Uri(e.Uri);
             var args = new NavigatingEventArgs(uri);
@@ -130,19 +131,19 @@ namespace SpiderEye.Windows
             e.Cancel = args.Cancel;
         }
 
-        private void Webview_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+        private void Webview_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             if (EnableDevTools) { webview.CoreWebView2.OpenDevToolsWindow(); }
 
-            PageLoaded?.Invoke(this, new PageLoadEventArgs(lastNavigatedUri!, e.IsSuccess));
+            PageLoaded?.Invoke(this, new PageLoadEventArgs(lastNavigatedUri, e.IsSuccess));
         }
 
-        private void Webview_DocumentTitleChanged(object? sender, object e)
+        private void Webview_DocumentTitleChanged(object sender, object e)
         {
             TitleChanged?.Invoke(this, webview.CoreWebView2.DocumentTitle);
         }
 
-        private async void Webview_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+        private async void Webview_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
             await bridge.HandleScriptCall(e.TryGetWebMessageAsString());
         }

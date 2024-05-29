@@ -20,7 +20,7 @@ namespace SpiderEye
         /// </summary>
         internal IMenu NativeMenu { get; }
 
-        private readonly List<MenuItem> menuItems = new();
+        private readonly List<MenuItem> menuItems = new List<MenuItem>();
 
         internal MenuItemCollection(IMenu menu)
         {

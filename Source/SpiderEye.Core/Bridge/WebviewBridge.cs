@@ -10,21 +10,21 @@ namespace SpiderEye.Bridge
 {
     internal class WebviewBridge : IWebviewBridge
     {
-        public event EventHandler<string>? TitleChanged;
+        public event EventHandler<string> TitleChanged;
 
         private IWebview Webview
         {
             get { return window.NativeWindow.Webview; }
         }
 
-        private static event EventHandler<object>? GlobalEventHandlerUpdate;
-        private static readonly object GlobalHandlerLock = new();
-        private static readonly List<object> GlobalHandler = new();
+        private static event EventHandler<object> GlobalEventHandlerUpdate;
+        private static readonly object GlobalHandlerLock = new object();
+        private static readonly List<object> GlobalHandler = new List<object>();
 
         private static readonly IJsonConverter JsonConverter = new JsonNetJsonConverter();
 
-        private readonly HashSet<string> apiRootNames = new();
-        private readonly Dictionary<string, ApiMethod> apiMethods = new();
+        private readonly HashSet<string> apiRootNames = new HashSet<string>();
+        private readonly Dictionary<string, ApiMethod> apiMethods = new Dictionary<string, ApiMethod>();
 
         private readonly Window window;
 
@@ -57,14 +57,14 @@ namespace SpiderEye.Bridge
         public async Task InvokeAsync(string id, object data)
         {
             string script = GetInvokeScript(id, data);
-            string? resultJson = await Application.Invoke(() => Webview.ExecuteScriptAsync(script));
+            string resultJson = await Application.Invoke(() => Webview.ExecuteScriptAsync(script));
             ResolveEventResult(id, resultJson);
         }
 
-        public async Task<T?> InvokeAsync<T>(string id, object data)
+        public async Task<T> InvokeAsync<T>(string id, object data) where T : class
         {
             string script = GetInvokeScript(id, data);
-            string? resultJson = await Application.Invoke(() => Webview.ExecuteScriptAsync(script));
+            string resultJson = await Application.Invoke(() => Webview.ExecuteScriptAsync(script));
             var result = ResolveEventResult(id, resultJson);
             return ResolveInvokeResult<T>(result);
         }
@@ -117,7 +117,7 @@ namespace SpiderEye.Bridge
             return $"window._spidereye._sendEvent({idJson}, {dataJson})";
         }
 
-        private static EventResultModel ResolveEventResult(string id, string? resultJson)
+        private static EventResultModel ResolveEventResult(string id, string resultJson)
         {
             if (resultJson == null) { throw new InvalidOperationException($"Event with ID \"{id}\" did not return result JSON."); }
 
@@ -128,11 +128,11 @@ namespace SpiderEye.Bridge
 
             if (!result.Success)
             {
-                string? message = result.Error?.Message;
+                string message = result.Error?.Message;
                 if (string.IsNullOrWhiteSpace(message)) { message = $"Error executing Event with ID \"{id}\"."; }
                 else if (!string.IsNullOrWhiteSpace(result.Error?.Name)) { message = $"{result.Error.Name}: {message}"; }
 
-                string? stackTrace = result.Error?.Stack;
+                string stackTrace = result.Error?.Stack;
                 if (string.IsNullOrWhiteSpace(stackTrace)) { throw new ScriptException(message); }
                 else { throw new ScriptException(message, new ScriptException(message, stackTrace)); }
             }
@@ -140,7 +140,7 @@ namespace SpiderEye.Bridge
             return result;
         }
 
-        private static T? ResolveInvokeResult<T>(EventResultModel result)
+        private static T ResolveInvokeResult<T>(EventResultModel result) where T : class
         {
             if (!result.HasResult || result.Result == null) { return default; }
             else { return JsonConverter.Deserialize<T>(result.Result); }
@@ -153,7 +153,7 @@ namespace SpiderEye.Bridge
             await Application.Invoke(() => Webview.ExecuteScriptAsync(script));
         }
 
-        private async Task<ApiResultModel> ResolveCall(string? id, string? parameters)
+        private async Task<ApiResultModel> ResolveCall(string id, string parameters)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -164,13 +164,13 @@ namespace SpiderEye.Bridge
             {
                 try
                 {
-                    object? parametersObject = null;
+                    object parametersObject = null;
                     if (info.HasParameter && !string.IsNullOrWhiteSpace(parameters))
                     {
                         parametersObject = JsonConverter.Deserialize(parameters, info.ParameterType);
                     }
 
-                    object? result = await info.InvokeAsync(parametersObject);
+                    object result = await info.InvokeAsync(parametersObject);
                     return new ApiResultModel
                     {
                         Success = true,

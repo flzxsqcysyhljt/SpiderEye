@@ -12,15 +12,15 @@ namespace SpiderEye.Windows
 {
     internal class WinFormsWindow : Form, IWindow
     {
-        event CancelableEventHandler? IWindow.Closing
+        event CancelableEventHandler IWindow.Closing
         {
             add { ClosingBackingEvent += value; }
             remove { ClosingBackingEvent -= value; }
         }
 
-        private event CancelableEventHandler? ClosingBackingEvent;
+        private event CancelableEventHandler ClosingBackingEvent;
 
-        public string? Title
+        public string Title
         {
             get { return Text; }
             set { Text = value; }
@@ -65,7 +65,7 @@ namespace SpiderEye.Windows
             }
         }
 
-        public string? BackgroundColor
+        public string BackgroundColor
         {
             get { return ColorTools.ToHex(BackColor.R, BackColor.G, BackColor.B); }
             set
@@ -78,7 +78,7 @@ namespace SpiderEye.Windows
 
         public bool UseBrowserTitle { get; set; }
 
-        AppIcon? IWindow.Icon
+        AppIcon IWindow.Icon
         {
             get { return icon; }
             set { SetIcon(value); }
@@ -103,7 +103,7 @@ namespace SpiderEye.Windows
 
         private readonly IWinFormsWebview webview;
 
-        private AppIcon? icon;
+        private AppIcon icon;
         private bool canResizeField = true;
         private WindowBorderStyle borderStyleField;
 
@@ -200,15 +200,17 @@ namespace SpiderEye.Windows
             if (IsMinimized(style)) { Native.SetWindowState(this, SW.RESTORE); }
         }
 
-        public void SetIcon(AppIcon? icon)
+        public void SetIcon(AppIcon icon)
         {
             this.icon = icon;
 
             if (icon == null || icon.Icons.Length == 0) { Icon = null; }
             else
             {
-                using var stream = icon.GetIconDataStream(icon.DefaultIcon);
-                Icon = new Icon(stream);
+                using (var stream = icon.GetIconDataStream(icon.DefaultIcon))
+                {
+                    Icon = new Icon(stream);
+                }
             }
         }
 
@@ -247,7 +249,7 @@ namespace SpiderEye.Windows
             }
         }
 
-        private void Webview_TitleChanged(object? sender, string title)
+        private void Webview_TitleChanged(object sender, string title)
         {
             if (UseBrowserTitle)
             {
@@ -257,12 +259,18 @@ namespace SpiderEye.Windows
 
         private void SetBorderStyle()
         {
-            FormBorderStyle = borderStyleField switch
+            if (borderStyleField == WindowBorderStyle.Default)
             {
-                WindowBorderStyle.Default => canResizeField ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle,
-                WindowBorderStyle.None => FormBorderStyle.None,
-                _ => throw new ArgumentException($"Invalid border style value of {borderStyleField}", nameof(BorderStyle)),
-            };
+                FormBorderStyle = canResizeField ? FormBorderStyle.Sizable : FormBorderStyle.FixedSingle;
+            }
+            else if (borderStyleField == WindowBorderStyle.None)
+            {
+                FormBorderStyle = FormBorderStyle.None;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid border style value of {borderStyleField}", nameof(BorderStyle));
+            }
         }
 
         private static WebviewType ChooseWebview()

@@ -10,17 +10,19 @@ namespace SpiderEye.Bridge
     internal class ApiMethod
     {
         public string Name { get; }
-        public Type? ParameterType { get; }
+        public Type ParameterType { get; }
         public Type ReturnType { get; }
         public bool HasReturnValue { get; }
 
+#if NET6_0_OR_GREATER
         [MemberNotNullWhen(true, nameof(ParameterType))]
+#endif
         public bool HasParameter { get; }
         public bool IsAsync { get; }
 
         private readonly object instance;
         private readonly MethodInfo info;
-        private readonly Func<object, object?>? getTaskResult;
+        private readonly Func<object, object> getTaskResult;
 
         public ApiMethod(object instance, MethodInfo info)
         {
@@ -35,7 +37,7 @@ namespace SpiderEye.Bridge
             if (ReturnType.IsGenericType && ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 var prop = ReturnType.GetProperty("Result");
-                getTaskResult = (task) => prop!.GetValue(task, null);
+                getTaskResult = (task) => prop.GetValue(task, null);
 
                 ReturnType = ReturnType.GenericTypeArguments[0];
                 IsAsync = true;
@@ -49,18 +51,18 @@ namespace SpiderEye.Bridge
             HasReturnValue = ReturnType != typeof(void);
         }
 
-        public async Task<object?> InvokeAsync(object? parameter)
+        public async Task<object> InvokeAsync(object parameter)
         {
-            object? result;
-            if (HasParameter) { result = info.Invoke(instance, new object?[] { parameter }); }
+            object result;
+            if (HasParameter) { result = info.Invoke(instance, new object[] { parameter }); }
             else { result = info.Invoke(instance, null); }
 
             if (!IsAsync) { return result; }
 
-            await (result as Task)!;
+            await (result as Task);
 
             if (!HasReturnValue) { return null; }
-            else { return getTaskResult!(result); }
+            else { return getTaskResult(result); }
         }
     }
 }

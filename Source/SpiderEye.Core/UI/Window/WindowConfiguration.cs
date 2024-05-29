@@ -4,11 +4,11 @@ namespace SpiderEye
 {
     internal class WindowConfiguration
     {
-        public string? Title { get; }
+        public string Title { get; }
         public Size Size { get; }
         public Size MinSize { get; }
         public Size MaxSize { get; }
-        public string? BackgroundColor { get; }
+        public string BackgroundColor { get; }
         public bool CanResize { get; }
         public bool UseBrowserTitle { get; }
         public bool EnableScriptInterface { get; }

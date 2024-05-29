@@ -16,7 +16,7 @@ namespace SpiderEye
         /// If no explicit port number was provided in the constructor,
         /// this value is only valid after calling <see cref="Start"/>.
         /// </summary>
-        public string? HostAddress
+        public string HostAddress
         {
             get;
             private set;
@@ -46,7 +46,9 @@ namespace SpiderEye
         /// <summary>
         /// Starts the server.
         /// </summary>
+#if NET6_0_OR_GREATER
         [MemberNotNull(nameof(HostAddress))]
+#endif
         public void Start()
         {
             if (HostAddress == null)
@@ -71,7 +73,7 @@ namespace SpiderEye
 
         private static int GetFreeTcpPort()
         {
-            TcpListener? tcp = null;
+            TcpListener tcp = null;
             try
             {
                 tcp = new TcpListener(IPAddress.Loopback, 0);
@@ -85,11 +87,11 @@ namespace SpiderEye
         private async void ListenerCallback(IAsyncResult result)
         {
             var listener = result.AsyncState as HttpListener;
-            HttpListenerContext? context = null;
+            HttpListenerContext context = null;
 
             try
             {
-                listener!.BeginGetContext(ListenerCallback, listener);
+                listener.BeginGetContext(ListenerCallback, listener);
                 context = listener.EndGetContext(result);
             }
             catch { return; }
@@ -98,14 +100,18 @@ namespace SpiderEye
             {
                 if (context.Request.HttpMethod.ToUpper() == "GET" && context.Request.Url != null)
                 {
-                    using var stream = await Application.ContentProvider.GetStreamAsync(context.Request.Url);
-                    if (stream != null)
+                    using (var stream = await Application.ContentProvider.GetStreamAsync(context.Request.Url))
                     {
-                        context.Response.ContentType = MimeTypes.FindForUri(context.Request.Url);
-                        using var responseStream = context.Response.OutputStream;
-                        await stream.CopyToAsync(responseStream);
+                        if (stream != null)
+                        {
+                            context.Response.ContentType = MimeTypes.FindForUri(context.Request.Url);
+                            using (var responseStream = context.Response.OutputStream)
+                            {
+                                await stream.CopyToAsync(responseStream);
+                            }
+                        }
+                        else { context.Response.StatusCode = 404; }
                     }
-                    else { context.Response.StatusCode = 404; }
                 }
                 else { context.Response.StatusCode = 400; }
             }

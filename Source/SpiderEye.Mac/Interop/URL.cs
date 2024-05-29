@@ -5,7 +5,7 @@ namespace SpiderEye.Mac.Interop
 {
     internal static class URL
     {
-        public static string? GetAsString(IntPtr handle)
+        public static string GetAsString(IntPtr handle)
         {
             if (handle == IntPtr.Zero) { return null; }
 

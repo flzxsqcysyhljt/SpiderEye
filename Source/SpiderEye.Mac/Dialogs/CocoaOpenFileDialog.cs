@@ -8,7 +8,7 @@ namespace SpiderEye.Mac
     {
         public bool Multiselect { get; set; }
 
-        public string[]? SelectedFiles
+        public string[] SelectedFiles
         {
             get;
             private set;

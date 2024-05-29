@@ -6,7 +6,7 @@ namespace SpiderEye.Bridge
 {
     internal class JsonNetJsonConverter : IJsonConverter
     {
-        private static readonly JsonSerializerSettings Settings = new()
+        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings()
         {
             ContractResolver = new DefaultContractResolver
             {
@@ -18,17 +18,17 @@ namespace SpiderEye.Bridge
             },
         };
 
-        public T? Deserialize<T>(string json)
+        public T Deserialize<T>(string json) where T : class
         {
             return JsonConvert.DeserializeObject<T>(json, Settings);
         }
 
-        public object? Deserialize(string json, Type type)
+        public object Deserialize(string json, Type type)
         {
             return JsonConvert.DeserializeObject(json, type, Settings);
         }
 
-        public string Serialize(object? value)
+        public string Serialize(object value)
         {
             return JsonConvert.SerializeObject(value, Settings);
         }

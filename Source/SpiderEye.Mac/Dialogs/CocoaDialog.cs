@@ -6,14 +6,14 @@ namespace SpiderEye.Mac
 {
     internal abstract class CocoaDialog : IDialog
     {
-        public string? Title { get; set; }
+        public string Title { get; set; }
 
         public DialogResult Show()
         {
             return Show(null);
         }
 
-        public DialogResult Show(IWindow? parent)
+        public DialogResult Show(IWindow parent)
         {
             var window = NativeCast.To<CocoaWindow>(parent);
             var dialog = CreateDialog();

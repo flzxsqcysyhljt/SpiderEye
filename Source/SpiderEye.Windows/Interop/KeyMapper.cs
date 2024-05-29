@@ -19,15 +19,21 @@ namespace SpiderEye.Windows.Interop
         private static Keys MapModifier(ModifierKey modifier)
         {
             // there is also Keys.LWin but it's not a modifier key
-            return modifier switch
+            switch (modifier)
             {
-                ModifierKey.None => Keys.None,
-                ModifierKey.Shift => Keys.Shift,
-                ModifierKey.Control => Keys.Control,
-                ModifierKey.Alt => Keys.Alt,
-                ModifierKey.Primary => Keys.Control,
-                _ => throw new NotSupportedException($"Unsupported modifier key: \"{modifier}\""),
-            };
+                case ModifierKey.None:
+                    return Keys.None;
+                case ModifierKey.Shift:
+                    return Keys.Shift;
+                case ModifierKey.Control:
+                case ModifierKey.Primary:
+                    return Keys.Control;
+                case ModifierKey.Alt:
+                    return Keys.Alt;
+                case ModifierKey.Super:
+                default:
+                    throw new NotSupportedException($"Unsupported modifier key: \"{modifier}\"");
+            }
         }
 
         private static Keys MapKey(Key key)
@@ -36,7 +42,7 @@ namespace SpiderEye.Windows.Interop
             else { throw new NotSupportedException($"Unsupported modifier key: \"{key}\""); }
         }
 
-        private static readonly Dictionary<Key, Keys> Keymap = new()
+        private static readonly Dictionary<Key, Keys> Keymap = new Dictionary<Key, Keys>()
         {
             { Key.None, Keys.None },
             { Key.F1, Keys.F1 },

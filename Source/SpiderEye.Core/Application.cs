@@ -59,7 +59,7 @@ namespace SpiderEye
             }
         }
 
-        private static IApplication app = null!;
+        private static IApplication app = null;
         private static IContentProvider contentProvider;
         private static IUriWatcher uriWatcher;
 
@@ -152,9 +152,9 @@ namespace SpiderEye
         {
             if (function == null) { throw new ArgumentNullException(nameof(function)); }
 
-            T result = default!;
+            T result = default;
             InvokeSafely(() => result = function());
-            return result!;
+            return result;
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace SpiderEye
         {
             CheckInitialized();
 
-            ExceptionDispatchInfo? exception = null;
+            ExceptionDispatchInfo exception = null;
             app.SynchronizationContext.Send(
                 state =>
                 {
@@ -195,13 +195,21 @@ namespace SpiderEye
         {
             if (app == null)
             {
-                string platform = OS switch
+                string platform;
+                switch (OS)
                 {
-                    OperatingSystem.Windows => "Windows",
-                    OperatingSystem.MacOS => "Mac",
-                    OperatingSystem.Linux => "Linux",
-                    _ => throw new PlatformNotSupportedException(),
-                };
+                    case OperatingSystem.Windows:
+                        platform = "Windows";
+                        break;
+                    case OperatingSystem.MacOS:
+                        platform = "Mac";
+                        break;
+                    case OperatingSystem.Linux:
+                        platform = "Linux";
+                        break;
+                    default:
+                        throw new PlatformNotSupportedException();
+                }
                 string message = $"Application has not been initialized yet. Call {platform}Application.Init() first.";
                 throw new InvalidOperationException(message);
             }

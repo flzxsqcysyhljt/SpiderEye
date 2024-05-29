@@ -7,7 +7,7 @@ namespace SpiderEye.Bridge.Api
     [BridgeObject("f0631cfea99a_Window")]
     internal class WindowApiBridge
     {
-        private static readonly WindowCollection WindowStore = new();
+        private static readonly WindowCollection WindowStore = new WindowCollection();
         private readonly Window parent;
 
         public WindowApiBridge(Window parent)
@@ -50,7 +50,7 @@ namespace SpiderEye.Bridge.Api
 
         private sealed class WindowCollection
         {
-            private readonly List<Window> windows = new();
+            private readonly List<Window> windows = new List<Window>();
 
             public void Add(Window window)
             {

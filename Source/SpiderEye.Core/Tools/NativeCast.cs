@@ -16,8 +16,10 @@ namespace SpiderEye.Tools
         /// <typeparam name="T">The native type.</typeparam>
         /// <param name="item">The item to cast.</param>
         /// <returns>The cast item.</returns>
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         [return: NotNullIfNotNull("item")]
-        public static T? To<T>(object? item)
+#endif
+        public static T To<T>(object item)
             where T : class
         {
             if (item == null) { return null; }

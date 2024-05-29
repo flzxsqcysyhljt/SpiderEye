@@ -25,7 +25,7 @@ namespace SpiderEye.Mac
 
         protected sealed class CocoaSubMenu : IMenu
         {
-            public string? Title
+            public string Title
             {
                 get
                 {
@@ -45,7 +45,7 @@ namespace SpiderEye.Mac
             }
 
             private readonly IntPtr menuItem;
-            private string? title;
+            private string title;
             private CocoaMenu? menu;
 
             public CocoaSubMenu(IntPtr menuItem)
@@ -53,12 +53,12 @@ namespace SpiderEye.Mac
             {
             }
 
-            public CocoaSubMenu(IntPtr menuItem, string? title)
+            public CocoaSubMenu(IntPtr menuItem, string title)
                 : this(menuItem, title, false)
             {
             }
 
-            public CocoaSubMenu(IntPtr menuItem, string? title, bool createImmediately)
+            public CocoaSubMenu(IntPtr menuItem, string title, bool createImmediately)
             {
                 this.menuItem = menuItem;
                 this.title = title;

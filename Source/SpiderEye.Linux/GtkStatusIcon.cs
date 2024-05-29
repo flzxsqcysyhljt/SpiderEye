@@ -8,17 +8,19 @@ namespace SpiderEye.Linux
 {
     internal class GtkStatusIcon : IStatusIcon
     {
-        public string? Title
+        public string Title
         {
             get { return GLibString.FromPointer(AppIndicator.GetTitle(Handle)); }
             set
             {
-                using GLibString title = value;
-                AppIndicator.SetTitle(Handle, title);
+                using (GLibString title = value)
+                {
+                    AppIndicator.SetTitle(Handle, title);
+                }
             }
         }
 
-        public AppIcon? Icon
+        public AppIcon Icon
         {
             get { return icon; }
             set
@@ -28,7 +30,7 @@ namespace SpiderEye.Linux
             }
         }
 
-        public Menu? Menu
+        public Menu Menu
         {
             get { return menu; }
             set
@@ -40,17 +42,21 @@ namespace SpiderEye.Linux
 
         public readonly IntPtr Handle;
         private const string DefaultIconName = "applications-other";
-        private AppIcon? icon;
-        private Menu? menu;
-        private string? tempIconFile;
+        private AppIcon icon;
+        private Menu menu;
+        private string tempIconFile;
 
         public GtkStatusIcon(string title)
         {
-            using GLibString id = LinuxApplication.ApplicationId ?? $"com.{title}.app";
-            using GLibString icon = DefaultIconName;
-            Handle = AppIndicator.Create(id, icon, AppIndicatorCategory.ApplicationStatus);
-            AppIndicator.SetStatus(Handle, AppIndicatorStatus.Active);
-            Title = title;
+            using (GLibString id = LinuxApplication.ApplicationId ?? $"com.{title}.app")
+            {
+                using (GLibString icon = DefaultIconName)
+                {
+                    Handle = AppIndicator.Create(id, icon, AppIndicatorCategory.ApplicationStatus);
+                    AppIndicator.SetStatus(Handle, AppIndicatorStatus.Active);
+                    Title = title;
+                }
+            }
         }
 
         public void Dispose()
@@ -58,9 +64,9 @@ namespace SpiderEye.Linux
             ClearTempFile();
         }
 
-        private void UpdateIcon(AppIcon? icon)
+        private void UpdateIcon(AppIcon icon)
         {
-            string? tempPath = null;
+            string tempPath = null;
 
             string path;
             if (icon == null || icon.Icons.Length == 0) { path = DefaultIconName; }
@@ -86,7 +92,7 @@ namespace SpiderEye.Linux
             tempIconFile = tempPath;
         }
 
-        private void UpdateMenu(Menu? menu)
+        private void UpdateMenu(Menu menu)
         {
             var nativeMenu = NativeCast.To<GtkMenu>(menu?.NativeMenu);
             AppIndicator.SetMenu(Handle, nativeMenu?.Handle ?? IntPtr.Zero);

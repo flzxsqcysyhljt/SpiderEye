@@ -7,26 +7,42 @@ namespace SpiderEye.Windows.Interop
     {
         public static DialogResult MapResult(FormsDialogResult result)
         {
-            return result switch
+            switch (result)
             {
-                FormsDialogResult.None => DialogResult.None,
-                FormsDialogResult.OK => DialogResult.Ok,
-                FormsDialogResult.Cancel => DialogResult.Cancel,
-                FormsDialogResult.Yes => DialogResult.Yes,
-                FormsDialogResult.No => DialogResult.No,
-                _ => DialogResult.None,
-            };
+                case FormsDialogResult.OK:
+                    return DialogResult.Ok;
+                case FormsDialogResult.Cancel:
+                    return DialogResult.Cancel;
+                case FormsDialogResult.Yes:
+                    return DialogResult.Yes;
+                case FormsDialogResult.No:
+                    return DialogResult.No;
+                case FormsDialogResult.None:
+                case FormsDialogResult.Abort:
+                case FormsDialogResult.Retry:
+                case FormsDialogResult.Ignore:
+#if NET6_0_OR_GREATER
+                case FormsDialogResult.TryAgain:
+                case FormsDialogResult.Continue: 
+#endif
+                default:
+                    return DialogResult.None;
+            }
         }
 
         public static FormsDialogButtons MapButtons(MessageBoxButtons buttons)
         {
-            return buttons switch
+            switch (buttons)
             {
-                MessageBoxButtons.Ok => FormsDialogButtons.OK,
-                MessageBoxButtons.OkCancel => FormsDialogButtons.OKCancel,
-                MessageBoxButtons.YesNo => FormsDialogButtons.YesNo,
-                _ => FormsDialogButtons.OK,
-            };
+                case MessageBoxButtons.Ok:
+                    return FormsDialogButtons.OK;
+                case MessageBoxButtons.OkCancel:
+                    return FormsDialogButtons.OKCancel;
+                case MessageBoxButtons.YesNo:
+                    return FormsDialogButtons.YesNo;
+                default:
+                    return FormsDialogButtons.OK;
+            }
         }
     }
 }

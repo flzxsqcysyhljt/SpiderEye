@@ -9,7 +9,7 @@ namespace SpiderEye
     /// </summary>
     public sealed class WindowCollection : IReadOnlyList<Window>
     {
-        internal event EventHandler? AllWindowsClosed;
+        internal event EventHandler AllWindowsClosed;
 
         /// <inheritdoc/>
         public Window this[int index]
@@ -23,7 +23,7 @@ namespace SpiderEye
             get { return windows.Count; }
         }
 
-        private readonly List<Window> windows = new();
+        private readonly List<Window> windows = new List<Window>();
 
         /// <inheritdoc/>
         public IEnumerator<Window> GetEnumerator()

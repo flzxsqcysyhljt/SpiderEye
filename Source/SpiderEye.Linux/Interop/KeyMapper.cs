@@ -55,11 +55,11 @@ namespace SpiderEye.UI.Platforms.Linux.Interop
 
         private static void MapKey(StringBuilder builder, Key key)
         {
-            if (Keymap.TryGetValue(key, out string? value)) { builder.Append(value); }
+            if (Keymap.TryGetValue(key, out string value)) { builder.Append(value); }
             else { throw new NotSupportedException($"Unsupported modifier key: \"{key}\""); }
         }
 
-        private static readonly Dictionary<Key, string> Keymap = new()
+        private static readonly Dictionary<Key, string> Keymap = new Dictionary<Key, string>()
         {
             { Key.None, string.Empty },
             { Key.F1, "<F1>" },

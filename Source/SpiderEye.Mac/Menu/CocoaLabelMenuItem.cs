@@ -6,9 +6,9 @@ namespace SpiderEye.Mac
 {
     internal class CocoaLabelMenuItem : CocoaMenuItem, ILabelMenuItem
     {
-        public event EventHandler? Click;
+        public event EventHandler Click;
 
-        public string? Label
+        public string Label
         {
             get
             {
@@ -52,7 +52,7 @@ namespace SpiderEye.Mac
             SetTarget(ObjC.RegisterName(target));
         }
 
-        public CocoaLabelMenuItem(string label, string action, string? target, long tag)
+        public CocoaLabelMenuItem(string label, string action, string target, long tag)
             : this(label, action)
         {
             SetTarget(ObjC.RegisterName(target));
@@ -73,7 +73,7 @@ namespace SpiderEye.Mac
         public void SetShortcut(ModifierKey modifier, Key key)
         {
             NSEventModifierFlags nsModifier = KeyMapper.GetModifier(modifier);
-            string? mappedKey = KeyMapper.GetKey(key);
+            string mappedKey = KeyMapper.GetKey(key);
             if (mappedKey == null) { return; }
 
             ObjC.Call(Handle, "setKeyEquivalentModifierMask:", new UIntPtr((ulong)nsModifier));

@@ -7,8 +7,8 @@ namespace SpiderEye.Mac
 {
     internal class CocoaMessageBox : IMessageBox
     {
-        public string? Title { get; set; }
-        public string? Message { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
         public MessageBoxButtons Buttons { get; set; }
 
         public DialogResult Show()
@@ -16,7 +16,7 @@ namespace SpiderEye.Mac
             return Show(null);
         }
 
-        public DialogResult Show(IWindow? parent)
+        public DialogResult Show(IWindow parent)
         {
             var window = NativeCast.To<CocoaWindow>(parent);
             using var alert = NSDialog.CreateAlert();

@@ -4,13 +4,15 @@ namespace SpiderEye.Windows
 {
     internal class WinFormsFolderSelectDialog : WinFormsDialog<WFFolderBrowserDialog>, IFolderSelectDialog
     {
-        public string? SelectedPath { get; set; }
+        public string SelectedPath { get; set; }
 
         protected override WFFolderBrowserDialog GetDialog()
         {
             return new WFFolderBrowserDialog
             {
-                UseDescriptionForTitle = true,
+#if NET6_0_OR_GREATER
+                UseDescriptionForTitle = true, 
+#endif
                 Description = Title,
                 SelectedPath = SelectedPath,
                 ShowNewFolderButton = true,

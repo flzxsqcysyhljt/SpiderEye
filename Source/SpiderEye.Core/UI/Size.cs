@@ -10,7 +10,7 @@ namespace SpiderEye
         /// <summary>
         /// A <see cref="Size"/> with <see cref="Width"/> and <see cref="Height"/> set to zero.
         /// </summary>
-        public static readonly Size Zero = new(0, 0);
+        public static readonly Size Zero = new Size(0, 0);
 
         /// <summary>
         /// The width.
@@ -34,7 +34,7 @@ namespace SpiderEye
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is Size size && Equals(size);
         }
@@ -49,7 +49,17 @@ namespace SpiderEye
         /// <inheritdoc/>
         public override int GetHashCode()
         {
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             return HashCode.Combine(Width, Height);
+#else
+            unchecked
+            {
+                int hashCode = 17;
+                hashCode = (hashCode * 23) + Width.GetHashCode();
+                hashCode = (hashCode * 23) + Height.GetHashCode();
+                return hashCode;
+            }
+#endif
         }
 
         /// <summary>

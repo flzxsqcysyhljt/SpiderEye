@@ -8,8 +8,8 @@ namespace SpiderEye.Linux
 {
     internal abstract class GtkFileDialog : GtkDialog, IFileDialog
     {
-        public string? InitialDirectory { get; set; }
-        public string? FileName { get; set; }
+        public string InitialDirectory { get; set; }
+        public string FileName { get; set; }
         public ICollection<FileFilter> FileFilters { get; }
 
         protected GtkFileDialog()
@@ -21,14 +21,18 @@ namespace SpiderEye.Linux
         {
             if (!string.IsNullOrWhiteSpace(InitialDirectory))
             {
-                using GLibString dir = InitialDirectory;
-                Gtk.Dialog.SetCurrentFolder(dialog, dir);
+                using (GLibString dir = InitialDirectory)
+                {
+                    Gtk.Dialog.SetCurrentFolder(dialog, dir);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(FileName))
             {
-                using GLibString name = FileName;
-                Gtk.Dialog.SetFileName(dialog, name);
+                using (GLibString name = FileName)
+                {
+                    Gtk.Dialog.SetFileName(dialog, name);
+                }
             }
 
             SetFileFilters(dialog, FileFilters);
@@ -38,8 +42,10 @@ namespace SpiderEye.Linux
         {
             if (result == DialogResult.Ok)
             {
-                using var fileName = new GLibString(Gtk.Dialog.GetFileName(dialog));
-                FileName = fileName.ToString();
+                using (var fileName = new GLibString(Gtk.Dialog.GetFileName(dialog)))
+                {
+                    FileName = fileName.ToString();
+                }
             }
             else { FileName = null; }
         }
@@ -58,8 +64,10 @@ namespace SpiderEye.Linux
 
                 foreach (string filterValue in filter.Filters)
                 {
-                    using GLibString value = filterValue;
-                    Gtk.Dialog.FileFilter.AddPattern(gfilter, value);
+                    using (GLibString value = filterValue)
+                    {
+                        Gtk.Dialog.FileFilter.AddPattern(gfilter, value);
+                    }
                 }
 
                 Gtk.Dialog.AddFileFilter(dialog, gfilter);

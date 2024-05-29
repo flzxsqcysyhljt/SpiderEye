@@ -21,8 +21,8 @@ namespace SpiderEye
         internal readonly IconInfo DefaultIcon;
         internal readonly IconInfo[] Icons;
 
-        private readonly Assembly? iconAssembly;
-        private readonly Dictionary<string, byte[]> iconCache = new();
+        private readonly Assembly iconAssembly;
+        private readonly Dictionary<string, byte[]> iconCache = new Dictionary<string, byte[]>();
 
         private AppIcon(IconSource source, string iconName, IEnumerable<string> names, bool cacheFiles)
         {
@@ -67,7 +67,7 @@ namespace SpiderEye
 
             if (!Path.IsPathRooted(directory))
             {
-                string? exeDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
+                string exeDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
                 if (exeDir == null) { throw new InvalidOperationException("Unable to get executable directory"); }
 
                 if (directory == string.Empty || directory == ".") { directory = exeDir; }
@@ -120,7 +120,7 @@ namespace SpiderEye
                 case IconSource.File:
                     if (UseFileCache)
                     {
-                        if (iconCache.TryGetValue(icon.Path, out byte[]? data)) { return new MemoryStream(data); }
+                        if (iconCache.TryGetValue(icon.Path, out byte[] data)) { return new MemoryStream(data); }
                         else
                         {
                             var stream = new MemoryStream();
@@ -138,7 +138,7 @@ namespace SpiderEye
                     else { return File.OpenRead(icon.Path); }
 
                 case IconSource.Resource:
-                    return iconAssembly!.GetManifestResourceStream(icon.Path) ?? throw new InvalidOperationException($"Assembly does not contain icon path {icon.Path}");
+                    return iconAssembly.GetManifestResourceStream(icon.Path) ?? throw new InvalidOperationException($"Assembly does not contain icon path {icon.Path}");
 
                 default:
                     throw new InvalidOperationException($"Invalid icon source \"{Source}\".");
@@ -149,26 +149,42 @@ namespace SpiderEye
         {
             if (icon == null) { throw new ArgumentNullException(nameof(icon)); }
 
-            if (UseFileCache && iconCache.TryGetValue(icon.Path, out byte[]? data))
+            if (UseFileCache && iconCache.TryGetValue(icon.Path, out byte[] data))
             {
                 return data;
             }
-
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             using var stream = GetIconDataStream(icon);
             using var reader = new BinaryReader(stream);
             return reader.ReadBytes((int)stream.Length);
+#else
+            using (var stream = GetIconDataStream(icon))
+            {
+                using (var reader = new BinaryReader(stream))
+                {
+                    return reader.ReadBytes((int)stream.Length);
+                }
+            }
+#endif
         }
 
         private static IconInfo[] GetIcons(string iconName, IEnumerable<string> names)
         {
-            string ext = Application.OS switch
+            string ext = string.Empty;
+            switch (Application.OS)
             {
-                OperatingSystem.Windows => "ico",
-                OperatingSystem.MacOS => "icns",
-                OperatingSystem.Linux => "png",
-                _ => throw new PlatformNotSupportedException(),
-            };
-
+                case OperatingSystem.Windows:
+                    ext = "ico";
+                    break;
+                case OperatingSystem.MacOS:
+                    ext = "icns";
+                    break;
+                case OperatingSystem.Linux:
+                    ext = "png";
+                    break;
+                default:
+                    throw new PlatformNotSupportedException();
+            }
             // matches patterns like:
             // Icon.png
             // Icon32.png
